@@ -41,10 +41,13 @@ input:focus{border-color:var(--gold);outline:none}
 .tag-gst{background:var(--gold);color:black}
 .tag-ai{background:purple}
 .toast{position:fixed;top:20px;right:20px;background:#222;padding:10px 15px;border-radius:6px;z-index:9999;max-width:300px;word-break:break-word}
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:9998}
 .modal-content{background:#112240;padding:20px;border-radius:8px;width:320px}
 table{width:100%;border-collapse:collapse}
 td,th{border:1px solid #333;padding:6px;text-align:left}
+.info-text{font-size:11px;color:#888;margin-bottom:10px}
+.info-link{color:var(--gold);text-decoration:none}
+.info-link:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -77,9 +80,10 @@ td,th{border:1px solid #333;padding:6px;text-align:left}
 
 <div class="modal" id="gstModal">
   <div class="modal-content">
-    <h3>GST Fetch</h3><br>
+    <h3>GST Fetch (Free)</h3>
+    <div class="info-text">Get free API key: <a href="https://gstincheck.co.in" target="_blank" class="info-link">gstincheck.co.in</a> (20 free requests)</div>
     <input id="gstin" placeholder="GSTIN" aria-label="GSTIN">
-    <input id="gstKey" placeholder="RapidAPI Key" aria-label="RapidAPI Key">
+    <input id="gstKey" placeholder="API Key from gstincheck.co.in" aria-label="API Key">
     <button class="btn btn-gold" onclick="fetchGST()">Fetch</button>
   </div>
 </div>
@@ -109,7 +113,7 @@ function renderProfiles(){
 function renderForm(){
   if(!active){document.getElementById("form").innerHTML="Select profile";return}
   let html="";
-  if(tab=="LEGAL"){html+=input("name","Company Name*")+input("gstin","GSTIN*")+input("pan","PAN")+input("trade","Trade Name")}
+  if(tab=="LEGAL"){html+=input("name","Company Name*")+input("gstin","GSTIN*")+input("pan","PAN")+input("trade","Trade Name")+input("address","Address")+input("state","State")}
   if(tab=="LEADERSHIP"){html+=input("ceo","CEO Name")+input("ceo_designation","Designation")+input("ceo_linkedin","LinkedIn")+textarea("leadership_notes","Notes")}
   if(tab=="PITCH INTEL"){html+=textarea("pain","Pain Points")+textarea("benefits","Benefits")}
   if(tab=="GST RETURNS"){html+=`<table><tr><th>FY</th><th>Type</th><th>Status</th></tr>${(active.returns||[]).map(r=>`<tr><td>${r.fy}</td><td>${r.type}</td><td>${r.status}</td></tr>`).join("")}</table>`}
@@ -124,7 +128,7 @@ function saveLocal(){localStorage.setItem("clientintel_profiles",JSON.stringify(
 function saveProfile(){showToast("Saved")}
 function showToast(msg){const t=document.createElement("div");t.className="toast";t.innerText=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),4000)}
 
-/* GST FETCH */
+/* GST FETCH - FREE API */
 function openGST(){gstModal.style.display="flex"}
 async function fetchGST(){
   const gstin=document.getElementById("gstin").value.trim();
@@ -133,29 +137,25 @@ async function fetchGST(){
   if(!active){const p={id:Date.now()};profiles.push(p);active=p;saveLocal();}
   showToast("Fetching GST data...");
   try{
-    const res=await fetch("https://gst-verification3.p.rapidapi.com/verify",{
-      method:"POST",
-      headers:{"content-type":"application/json","x-rapidapi-key":key,"x-rapidapi-host":"gst-verification3.p.rapidapi.com"},
-      body:JSON.stringify({gstin})
-    });
+    const res=await fetch(`https://sheet.gstincheck.co.in/check/${key}/${gstin}`);
     const data=await res.json();
     console.log("GST API response:",data);
-    const name=data.tradeName||data.tradeNam||data.legalNameOfBusiness||data.legal_name||data.company_name||data.name||(data.data&&(data.data.tradeName||data.data.legalNameOfBusiness))||"";
-    if(name){
-      active.name=name;
+    if(data.flag && data.data){
+      const d=data.data;
+      active.name=d.tradeNam||d.lgnm||"";
       active.gstin=gstin;
-      active.pan=data.pan||data.panNumber||gstin.substring(2,12);
-      active.trade=data.tradeName||data.tradeNam||"";
+      active.trade=d.tradeNam||"";
+      active.pan=gstin.substring(2,12);
+      active.address=d.pradr?.adr||"";
+      active.state=d.pradr?.addr?.stcd||"";
       saveLocal();render();
-      showToast("GST data filled: "+name);
+      showToast("GST data filled: "+active.name);
       gstModal.style.display="none";
-    } else if(data.message||data.error||data.msg){
-      showToast("API Error: "+(data.message||data.error||data.msg));
     } else {
-      showToast("Response: "+JSON.stringify(data).slice(0,120));
+      showToast(data.message||"Failed to fetch. Check GSTIN or API key");
     }
   }catch(e){
-    showToast("Fetch failed: "+e.message);
+    showToast("Error: "+e.message);
     console.error("GST Fetch error:",e);
   }
 }
