@@ -17,7 +17,6 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;font-family:Inter, sans-serif}
 body{background:var(--bg);color:var(--text);display:flex;height:100vh}
-
 /* Sidebar */
 .sidebar{
   width:240px;background:var(--sidebar);padding:20px;display:flex;flex-direction:column
@@ -28,14 +27,12 @@ body{background:var(--bg);color:var(--text);display:flex;height:100vh}
 }
 .nav-item:hover{background:#112240}
 .badge{background:var(--gold);color:black;padding:2px 6px;border-radius:10px;margin-left:6px}
-
 /* Layout */
 .main{flex:1;display:flex}
 .left-panel{
   width:280px;background:#0f2138;padding:10px;overflow-y:auto
 }
 .right-panel{flex:1;padding:20px;overflow-y:auto}
-
 /* Cards */
 .card{
   background:var(--card);
@@ -53,7 +50,6 @@ body{background:var(--bg);color:var(--text);display:flex;height:100vh}
   font-weight:bold;margin-right:10px
 }
 .row{display:flex;align-items:center}
-
 /* Buttons */
 .btn{
   padding:8px 12px;border:none;border-radius:6px;cursor:pointer
@@ -61,32 +57,27 @@ body{background:var(--bg);color:var(--text);display:flex;height:100vh}
 .btn-gold{background:var(--gold);color:black}
 .btn-green{background:green;color:white}
 .btn-purple{background:purple;color:white}
-
 /* Tabs */
 .tabs{display:flex;margin-bottom:10px}
 .tab{
   margin-right:15px;padding-bottom:5px;cursor:pointer
 }
 .tab.active{border-bottom:2px solid var(--gold)}
-
 /* Inputs */
 input, textarea, select{
   width:100%;padding:8px;margin-bottom:10px;
   background:#0d1b2a;border:1px solid #333;color:white;border-radius:4px
 }
 input:focus{border-color:var(--gold);outline:none}
-
 /* Badges */
 .tag{font-size:10px;padding:2px 6px;border-radius:4px;margin-left:5px}
 .tag-gst{background:var(--gold);color:black}
 .tag-ai{background:purple}
-
 /* Toast */
 .toast{
   position:fixed;top:20px;right:20px;
   background:#222;padding:10px 15px;border-radius:6px
 }
-
 /* Modal */
 .modal{
   position:fixed;top:0;left:0;width:100%;height:100%;
@@ -95,58 +86,45 @@ input:focus{border-color:var(--gold);outline:none}
 .modal-content{
   background:#112240;padding:20px;border-radius:8px;width:300px
 }
-
 /* Table */
 table{width:100%;border-collapse:collapse}
 td,th{border:1px solid #333;padding:6px;text-align:left}
-
 </style>
-</head>
 
 <body>
-
 <div class="sidebar">
   <div class="logo">ClientIntel Pro</div>
   <div class="nav-item">Dashboard</div>
-  <div class="nav-item">⭐ Company Intel <span id="count" class="badge">0</span></div>
+  <div class="nav-item">&#11088; Company Intel <span class="badge" id="count">0</span></div>
   <div class="nav-item">Contacts</div>
   <div class="nav-item">Settings</div>
 </div>
-
 <div class="main">
-
-<!-- LEFT PANEL -->
-<div class="left-panel">
-  <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-    <b>Company Profiles</b>
-    <button class="btn btn-gold" onclick="newProfile()">+ New</button>
+  <div class="left-panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <b>Company Profiles</b>
+      <button class="btn btn-gold" onclick="newProfile()">+ New</button>
+    </div>
+    <div id="profiles">No profiles yet.</div>
   </div>
-  <div id="profiles"></div>
-</div>
-
-<!-- RIGHT PANEL -->
-<div class="right-panel">
-
-<div style="display:flex;gap:10px;margin-bottom:10px">
-  <button class="btn btn-green" onclick="openGST()">GST Fetch</button>
-  <button class="btn btn-purple" onclick="openAI()">AI Fill</button>
-</div>
-
-<div class="tabs" id="tabs"></div>
-
-<div id="form"></div>
-
-<button class="btn btn-gold" onclick="saveProfile()">Save Profile</button>
-
-</div>
+  <div class="right-panel">
+    <div style="display:flex;gap:10px;margin-bottom:15px">
+      <button class="btn btn-green" onclick="openGST()">GST Fetch</button>
+      <button class="btn btn-purple" onclick="openAI()">AI Fill</button>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div id="form">Select profile</div>
+    <br>
+    <button class="btn btn-gold" onclick="saveProfile()">Save Profile</button>
+  </div>
 </div>
 
 <!-- GST Modal -->
 <div class="modal" id="gstModal">
   <div class="modal-content">
-    <h3>GST Fetch</h3>
-    <input id="gstin" placeholder="GSTIN">
-    <input id="gstKey" placeholder="RapidAPI Key">
+    <h3>GST Fetch</h3><br>
+    <input id="gstin" placeholder="GSTIN" aria-label="GSTIN">
+    <input id="gstKey" placeholder="RapidAPI Key" aria-label="RapidAPI Key">
     <button class="btn btn-gold" onclick="fetchGST()">Fetch</button>
   </div>
 </div>
@@ -154,7 +132,7 @@ td,th{border:1px solid #333;padding:6px;text-align:left}
 <!-- AI Modal -->
 <div class="modal" id="aiModal">
   <div class="modal-content">
-    <h3>AI Fill</h3>
+    <h3>AI Fill</h3><br>
     <input id="companyAI" placeholder="Company Name">
     <input id="aiKey" placeholder="Claude API Key">
     <button class="btn btn-gold" onclick="fetchAI()">Fill</button>
@@ -165,75 +143,57 @@ td,th{border:1px solid #333;padding:6px;text-align:left}
 let profiles = JSON.parse(localStorage.getItem("clientintel_profiles")||"[]");
 let active = null;
 let tab = "LEGAL";
-
 const tabs = ["LEGAL","PRESENCE","FINANCIAL","LEADERSHIP","SPOC","PITCH INTEL","GST RETURNS"];
-
 function renderTabs(){
-  document.getElementById("tabs").innerHTML =
-    tabs.map(t=>`<div class="tab ${t==tab?"active":""}" onclick="tab='${t}';render()">${t}</div>`).join("")
+  document.getElementById("tabs").innerHTML = tabs.map(t=>`<div class="tab ${t==tab?"active":""}" onclick="tab='${t}';render()">${t}</div>`).join("")
 }
-
 function renderProfiles(){
-  document.getElementById("profiles").innerHTML =
-    profiles.length ? profiles.map(p=>`
-      <div class="card ${p.id==active?.id?"active":""}" onclick="selectProfile('${p.id}')">
-        <div class="row">
-          <div class="avatar">${p.name?.[0]||"?"}</div>
-          <div>
-            <div>${p.name||"Unnamed"}</div>
-            <small>${p.gstin?.slice(0,6)||""}</small>
-          </div>
+  document.getElementById("profiles").innerHTML = profiles.length ? profiles.map(p=>`
+    <div class="card ${p.id==active?.id?"active":""}" onclick="selectProfile('${p.id}')">
+      <div class="row">
+        <div class="avatar">${p.name?.[0]||"?"}</div>
+        <div>
+          <div>${p.name||"Unnamed"}</div>
+          <small>${p.gstin?.slice(0,6)||""}</small>
         </div>
       </div>
-    `).join("") : "No profiles yet."
+    </div>
+  `).join("") : "No profiles yet."
   document.getElementById("count").innerText = profiles.length
 }
-
 function renderForm(){
   if(!active){document.getElementById("form").innerHTML="Select profile";return}
-
   let html="";
-
   if(tab=="LEGAL"){
     html+=input("name","Company Name*")
     html+=input("gstin","GSTIN*")
     html+=input("pan","PAN")
     html+=input("trade","Trade Name")
   }
-
   if(tab=="LEADERSHIP"){
     html+=input("ceo","CEO Name")
     html+=input("ceo_designation","Designation")
     html+=input("ceo_linkedin","LinkedIn")
     html+=textarea("leadership_notes","Notes")
   }
-
   if(tab=="PITCH INTEL"){
     html+=textarea("pain","Pain Points")
     html+=textarea("benefits","Benefits")
   }
-
   if(tab=="GST RETURNS"){
     html+=`<table><tr><th>FY</th><th>Type</th><th>Status</th></tr>
-      ${(active.returns||[]).map(r=>`<tr><td>${r.fy}</td><td>${r.type}</td><td>${r.status}</td></tr>`).join("")}
+    ${(active.returns||[]).map(r=>`<tr><td>${r.fy}</td><td>${r.type}</td><td>${r.status}</td></tr>`).join("")}
     </table>`
   }
-
   document.getElementById("form").innerHTML = html
 }
-
 function input(key,label){
   return `<input value="${active[key]||""}" oninput="update('${key}',this.value)" placeholder="${label}">`
 }
 function textarea(key,label){
   return `<textarea oninput="update('${key}',this.value)" placeholder="${label}">${active[key]||""}</textarea>`
 }
-
-function update(k,v){
-  active[k]=v
-  saveLocal()
-}
-
+function update(k,v){ active[k]=v; saveLocal() }
 function newProfile(){
   const p={id:Date.now()}
   profiles.push(p)
@@ -241,20 +201,14 @@ function newProfile(){
   saveLocal()
   render()
 }
-
 function selectProfile(id){
   active = profiles.find(p=>p.id==id)
   render()
 }
-
 function saveLocal(){
   localStorage.setItem("clientintel_profiles",JSON.stringify(profiles))
 }
-
-function saveProfile(){
-  showToast("Saved")
-}
-
+function saveProfile(){ showToast("Saved") }
 function showToast(msg){
   const t=document.createElement("div")
   t.className="toast";t.innerText=msg
@@ -262,29 +216,46 @@ function showToast(msg){
   setTimeout(()=>t.remove(),3000)
 }
 
-/* GST FETCH */
+/* GST FETCH - Fixed */
 function openGST(){gstModal.style.display="flex"}
 async function fetchGST(){
-  const gstin=document.getElementById("gstin").value
-  const key=document.getElementById("gstKey").value
-
-  const res=await fetch("https://gst-verification3.p.rapidapi.com/verify",{
-    method:"POST",
-    headers:{
-      "content-type":"application/json",
-      "x-rapidapi-key":key
-    },
-    body:JSON.stringify({gstin})
-  })
-  const data=await res.json()
-
-  active.name=data.tradeName
-  active.gstin=gstin
-
-  saveLocal()
-  render()
-  showToast("GST data filled")
-  gstModal.style.display="none"
+  const gstin = document.getElementById("gstin").value.trim();
+  const key = document.getElementById("gstKey").value.trim();
+  if(!gstin || !key){ showToast("Enter GSTIN and API Key"); return; }
+  // Auto-create a profile if none is selected
+  if(!active){
+    const p = {id: Date.now()};
+    profiles.push(p);
+    active = p;
+    saveLocal();
+  }
+  showToast("Fetching...");
+  try {
+    const res = await fetch(`https://gst-number-verification.p.rapidapi.com/gstNumber?gstNumber=${gstin}`, {
+      method: "GET",
+      headers: {
+        "x-rapidapi-host": "gst-number-verification.p.rapidapi.com",
+        "x-rapidapi-key": key
+      }
+    });
+    const data = await res.json();
+    if(data && (data.tradeName || data.legalNameOfBusiness || data.tradeNam)){
+      active.name = data.tradeName || data.legalNameOfBusiness || data.tradeNam || "";
+      active.gstin = gstin;
+      active.pan = gstin.substring(2,12);
+      active.trade = data.tradeName || "";
+      saveLocal();
+      render();
+      showToast("GST data filled!");
+      gstModal.style.display = "none";
+    } else {
+      showToast("No data returned. Check GSTIN or API key.");
+      console.error("GST API response:", data);
+    }
+  } catch(e) {
+    showToast("Fetch failed: " + e.message);
+    console.error("GST Fetch error:", e);
+  }
 }
 
 /* AI */
@@ -292,7 +263,6 @@ function openAI(){aiModal.style.display="flex"}
 async function fetchAI(){
   const name=document.getElementById("companyAI").value
   const key=document.getElementById("aiKey").value
-
   const res=await fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",
     headers:{
@@ -310,13 +280,11 @@ async function fetchAI(){
     })
   })
   const data=await res.json()
-
   try{
     const json=JSON.parse(data.content[0].text)
     active.ceo=json.ceo_name
     active.pain=json.pain_points
   }catch(e){}
-
   saveLocal()
   render()
   showToast("AI filled")
@@ -330,7 +298,6 @@ function render(){
   renderForm()
 }
 render()
-
 </script>
 
 </body>
